@@ -1,0 +1,62 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>font/HelveticaNeueCyr-Bold.ttf</file>
+        <file>font/HelveticaNeueCyr-Roman.ttf</file>
+
+        <file>shaders/light_fs.glsl</file>
+        <file>shaders/light_vs.glsl</file>
+        <file>shaders/line_fs.glsl</file>
+        <file>shaders/line_gs.glsl</file>
+        <file>shaders/line_vs.glsl</file>
+        <file>shaders/object_fs.glsl</file>
+        <file>shaders/object_vs.glsl</file>
+        <file>shaders/shadowmap_fs.glsl</file>
+        <file>shaders/shadowmap_vs.glsl</file>
+        <file>shaders/skybox_fs.glsl</file>
+        <file>shaders/skybox_vs.glsl</file>
+        <file>shaders/terrain_fs.glsl</file>
+        <file>shaders/terrain_tcs.glsl</file>
+        <file>shaders/terrain_tes.glsl</file>
+        <file>shaders/terrain_vs.glsl</file>
+        <file>shaders/textured_object_fs.glsl</file>
+        <file>shaders/textured_object_vs.glsl</file>
+
+        <file>meshes/car.mtl</file>
+        <file>meshes/car.obj</file>
+        <file>meshes/car2.mtl</file>
+        <file>meshes/car2.obj</file>
+        <file>meshes/cube.mtl</file>
+        <file>meshes/cube.obj</file>
+        <file>meshes/cube.stl</file>
+        <file>meshes/mill.mtl</file>
+        <file>meshes/mill.obj</file>
+        <file>meshes/plane.mtl</file>
+        <file>meshes/plane.obj</file>
+        <file>meshes/react_arm.mtl</file>
+        <file>meshes/react_arm.obj</file>
+        <file>meshes/react_stand.mtl</file>
+        <file>meshes/react_stand.obj</file>
+        <file>meshes/react_wheel.mtl</file>
+        <file>meshes/react_wheel.obj</file>
+        <file>meshes/shadow_test.mtl</file>
+        <file>meshes/shadow_test.obj</file>
+        <file>meshes/skybox.mtl</file>
+        <file>meshes/skybox.obj</file>
+        <file>meshes/sphere.mtl</file>
+        <file>meshes/sphere.obj</file>
+        <file>meshes/sphere.stl</file>
+
+        <file>cubemap/nx.png</file>
+        <file>cubemap/nz.png</file>
+        <file>cubemap/ny.png</file>
+        <file>cubemap/px.png</file>
+        <file>cubemap/py.png</file>
+        <file>cubemap/pz.png</file>
+
+        <file>textures/terrain/grid.jpg</file>
+        <file>textures/terrain/voronoi.png</file>
+        <file>textures/terrain/voronoi_normal.png</file>
+
+    </qresource>
+</RCC>

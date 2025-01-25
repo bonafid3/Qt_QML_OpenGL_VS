@@ -1,0 +1,38 @@
+{
+  "environments": [
+    {
+      "NINJA": "C:/Program Files/Ninja/bin/ninja.exe",
+      "QTDIR": "C:/Qt/5.15.2/msvc2019_64",
+      "CPP_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe"
+    }
+  ],
+
+  "configurations": [
+    {
+      "name": "Qt-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "intelliSenseMode": "windows-clang-x64",
+      "variables": [
+        {
+          "name": "CMAKE_MAKE_PROGRAM",
+          "value": "${env.NINJA}"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "${env.CPP_COMPILER}"
+        },
+        {
+          "name": "CMAKE_PREFIX_PATH",
+          "value": "${env.QTDIR}"
+        }
+      ]
+    }
+  ]
+}

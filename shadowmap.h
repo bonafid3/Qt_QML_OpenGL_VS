@@ -18,8 +18,6 @@ public:
 	const GLuint& shadowMapTexture() const;
 	const QMatrix4x4& shadowMapMatrix() const;
 
-	void saveShadowMap(const QString& fileName);
-
 private:
 	cMesh mMesh;
 	GLuint mShadowMapFBO, mShadowMapTexture;

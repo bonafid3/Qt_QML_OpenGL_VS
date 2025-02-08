@@ -75,9 +75,7 @@ void Skybox::render(const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMa
     mMesh.shader().setUniformValue("qt_modelViewMatrix", viewMatrix * mMesh.localTransform());
     mMesh.shader().setUniformValue("qt_projectionMatrix", projectionMatrix);
 
-    f = ctx->functions();
     f->glEnableVertexAttribArray(0);
-
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), nullptr);
     glDrawArrays(GL_TRIANGLES, 0, mMesh.vbo().size() / 9 / sizeof(GLfloat));
 

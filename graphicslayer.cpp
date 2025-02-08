@@ -10,10 +10,10 @@
 GraphicsLayer::GraphicsLayer() :
 	mPerspective(false)
 {
-
 	this->setAcceptHoverEvents(true);
 	this->setFlags(QQuickItem::ItemClipsChildrenToShape | QQuickItem::ItemHasContents | QQuickItem::ItemIsFocusScope | QQuickItem::ItemAcceptsDrops);
 	this->setAcceptedMouseButtons(Qt::AllButtons);
+	this->setMirrorVertically(true);
 
 	mTimer = new QTimer(this);
 	mTimer->setObjectName("mTimer");

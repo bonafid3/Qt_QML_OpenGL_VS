@@ -10,6 +10,9 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 
+#include <QTimer>
+#include <QElapsedTimer>
+
 #include "defines.h"
 
 #include "enums.h"
@@ -17,8 +20,10 @@
 #include "reactionwheel.h"
 
 #include "skybox.h"
+#include "ssao.h"
 #include "shadowmap.h"
 #include "terrain.h"
+#include "texturedplane.h"
 
 class MyRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions
 {
@@ -37,11 +42,20 @@ public:
 
 private:
 
+	QElapsedTimer mElapsedTimer;
+	QVector3D mMovementDirection;
+	QVector3D mCameraVelocity;
+	float mAcceleration = 0.1f;
+	float mDeceleration = 0.1f;
+	float mMaxSpeed = 1.0f;
+
 	QOpenGLFramebufferObject* mGraphicsLayerFBO;
 
 	Skybox mSkybox;
+	SSAO mSSAO;
 	ShadowMap mShadowMap;
 	Terrain mTerrain;
+	TexturedPlane mTexturedPlane;
 
 	cMesh mLightObj;
 	cMesh mMill;

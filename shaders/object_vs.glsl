@@ -14,21 +14,24 @@ uniform mat3 qt_normalMatrix;
 uniform vec3 qt_lightPositionView;
 
 out vec3 vertexColor_FS;
+out vec3 fragPosView_FS;
 out vec3 vertexNormal_FS;
 out vec3 lightDirection_FS;
 out vec4 shadowCoords_FS;
 
+
 void main()
 {
-    vec4 localPos = qt_modelMatrix * vec4(qt_vertex, 1);
-    vec4 worldPos = qt_viewMatrix * localPos;
+    vec4 worldPos = qt_modelMatrix * vec4(qt_vertex, 1);
+    vec4 viewPos = qt_viewMatrix * worldPos;
+    
+    fragPosView_FS = viewPos.xyz;
 
     vertexColor_FS = qt_color;
-    vertexNormal_FS = normalize(qt_normalMatrix * qt_normal);
-    lightDirection_FS = normalize(worldPos - vec4(qt_lightPositionView,1)).xyz;
+    vertexNormal_FS = normalize(qt_normalMatrix * qt_normal); // normalView
+    lightDirection_FS = normalize(vec4(qt_lightPositionView, 1) - viewPos).xyz;
 
-    shadowCoords_FS = qt_shadowMapMatrix * localPos;
+    shadowCoords_FS = qt_shadowMapMatrix * worldPos;
 
-    gl_Position = qt_projectionMatrix * worldPos;
+    gl_Position = qt_projectionMatrix * viewPos;
 }
-

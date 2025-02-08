@@ -2,7 +2,7 @@
   "environments": [
     {
       "NINJA": "C:/Program Files/Ninja/bin/ninja.exe",
-      "QTDIR": "C:/Qt/6.8.2/msvc2022_64",
+      "QTDIR": "C:/Qt/5.15.2/msvc2019_64",
       "CPP_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe"
     }
   ],

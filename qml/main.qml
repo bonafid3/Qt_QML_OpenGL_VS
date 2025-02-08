@@ -1,7 +1,8 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 import GraphicsLayer 1.0
-import "qrc:/"
+
+import "qrc:/qml"
 
 Rectangle {
 	id: root
@@ -9,41 +10,48 @@ Rectangle {
 	height: 480
 	color: "red"
 
-	Keys.onPressed:
-	{
-		graphicsLayer.onKeyPressed(event.key, event.modifiers)
-	}
-
-	Keys.onReleased:
-	{
-		graphicsLayer.onKeyReleased(event.key, event.modifiers)
-	}
+	property int fontPixelSize: 20
 
 	GraphicsLayer {
 		id: graphicsLayer
 		anchors.fill: parent
-		mirrorVertically: true
 	} // GraphicsLayer
+
+	// input handling
+	Keys.onPressed: function(event) { graphicsLayer.onKeyPressed(event.key) }
+	Keys.onReleased: function(event) { graphicsLayer.onKeyReleased(event.key) }
 
 	MouseArea {
 		anchors.fill: graphicsLayer
 		hoverEnabled: true
 		acceptedButtons: Qt.LeftButton | Qt.RightButton
-		onPressed: graphicsLayer.onMousePressed(mouse.x, mouse.y, mouse.button)
-		onReleased: graphicsLayer.onMouseReleased(mouse.x, mouse.x, mouse.button)
-		onMouseXChanged: graphicsLayer.onMousePositionChanged(mouse.x, mouse.y)
-		onMouseYChanged: graphicsLayer.onMousePositionChanged(mouse.x, mouse.y)
+		onPressed: function(mouseEvent) { graphicsLayer.onMousePressed(mouseEvent.x, mouseEvent.y, mouseEvent.button) }
+		onReleased: function(mouseEvent) { graphicsLayer.onMouseReleased(mouseEvent.x, mouseEvent.y, mouseEvent.button) }
+		onMouseXChanged: function(mouseEvent) { graphicsLayer.onMousePositionChanged(mouseEvent.x, mouseEvent.y) }
+		onMouseYChanged: function(mouseEvent) { graphicsLayer.onMousePositionChanged(mouseEvent.x, mouseEvent.y) }
 
-		onClicked: graphicsLayer.forceActiveFocus()
+		onClicked: { graphicsLayer.forceActiveFocus() }
 
-		onWheel: function(wheelEvent){
-			graphicsLayer.onWheeled(wheelEvent)
-		}
+		onWheel: function(wheelEvent) { graphicsLayer.onWheeled(wheelEvent) }
 	} // MouseArea
 
-	Text {
+	MyComboBox {
+		anchors.top: parent.top
+		anchors.topMargin: 10
+		anchors.right: parent.right
+		anchors.rightMargin: 10
+		model: app.comboModel
+		textRole: "textRole"
+		focus: false
+		onCurrentIndexChanged: {
+			app.comboModel.setCurrentIndex(currentIndex)
+			graphicsLayer.forceActiveFocus()
+		}
+	}
+
+	Label {
 		text: "FPS: " + graphicsLayer.fpsCounter.fps
 		color: "white"
-		font.pixelSize: 24
+		font.pixelSize: root.fontPixelSize
 	}
 }

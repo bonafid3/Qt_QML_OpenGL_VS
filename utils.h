@@ -39,4 +39,9 @@ inline int random(int min, int max)
     return rand() % (max + 1 - min) + min;
 }
 
+inline float ssaoLerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}
+
 #endif // UTILS_H

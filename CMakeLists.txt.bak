@@ -13,11 +13,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-#find_package(Qt5 REQUIRED COMPONENTS Core Quick Gui Qml)
-
-find_package(Qt6 6.8 COMPONENTS Core REQUIRED)
-find_package(Qt6 6.8 COMPONENTS Quick REQUIRED)
-find_package(Qt6 6.8 COMPONENTS QuickControls2 REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Core Quick Gui Qml)
 
 find_package(OpenGL REQUIRED)
 
@@ -35,8 +31,6 @@ endif()
 
 add_executable(${PROJECT_NAME}
     qml.qrc
-    application.h
-    application.cpp
     cabstractmeshloader.cpp
 	cabstractmeshloader.h
     cmesh.cpp
@@ -81,23 +75,20 @@ add_executable(${PROJECT_NAME}
 
 # Link the Qt5 libraries to the executable
 target_link_libraries(${PROJECT_NAME} 
-    Qt6::Core 
-    Qt6::Quick
-    Qt6::Gui
-    Qt6::Qml
+    Qt5::Core 
+    Qt5::Quick
+    Qt5::Gui
+    Qt5::Qml
 )
 
 # Include the Qt5 include directories
 target_include_directories(${PROJECT_NAME} 
-    PRIVATE ${Qt6_INCLUDE_DIRS}
+    PRIVATE ${Qt5_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
-target_link_libraries(${PROJECT_NAME} Qt6::Core)
-target_link_libraries(${PROJECT_NAME} Qt6::Quick)
-target_link_libraries(${PROJECT_NAME} Qt6::QuickControls2)
 
 # Add resources
-qt_add_resources(RESOURCES resources.qrc)
+qt5_add_resources(RESOURCES resources.qrc)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_WARNING_AS_ERROR ON)

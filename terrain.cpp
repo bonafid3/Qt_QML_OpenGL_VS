@@ -81,7 +81,7 @@ void Terrain::render(const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionM
         mShader.setUniformValue("qt_shadowMapMatrix", shadowMap.shadowMapMatrix()); // light projection matrix
 
         QMatrix4x4 terrainModelMatrix;
-        terrainModelMatrix.translate(-(TERRAIN_WIDTH * TERRAIN_SCALER) / 2, 0, -(TERRAIN_WIDTH * TERRAIN_SCALER) / 2);
+        terrainModelMatrix.translate(-(TERRAIN_WIDTH * TERRAIN_SCALER) / 2.0, 0, -(TERRAIN_WIDTH * TERRAIN_SCALER) / 2.0);
 
         mShader.setUniformValue("qt_modelMatrix", terrainModelMatrix);
         mShader.setUniformValue("qt_viewMatrix", viewMatrix);
@@ -89,7 +89,7 @@ void Terrain::render(const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionM
 
         mShader.setUniformValue("qt_normalMatrix", viewMatrix.normalMatrix()); // inverse & transpose of world matrix
 
-        mShader.setUniformValue("qt_lightPositionView", viewMatrix * lightObjPosition);
+        mShader.setUniformValue("qt_lightPositionView", viewMatrix.map(lightObjPosition));
         mShader.setUniformValue("qt_eyeVector", eyePos);
 
         // wireframe on
@@ -168,10 +168,10 @@ void Terrain::initTerrainPatchesAndVBO()
             m.translate(QVector3D(x * TERRAIN_SCALER, 0, z * TERRAIN_SCALER));
             m.scale(QVector3D(TERRAIN_SCALER, 0, TERRAIN_SCALER));
 
-            terrainPatchData.push_back(m * QVector3D(0, 0, 0));
-            terrainPatchData.push_back(m * QVector3D(1, 0, 0));
-            terrainPatchData.push_back(m * QVector3D(1, 0, 1));
-            terrainPatchData.push_back(m * QVector3D(0, 0, 1));
+            terrainPatchData.push_back(m.map(QVector3D(0, 0, 0)));
+            terrainPatchData.push_back(m.map(QVector3D(1, 0, 0)));
+            terrainPatchData.push_back(m.map(QVector3D(1, 0, 1)));
+            terrainPatchData.push_back(m.map(QVector3D(0, 0, 1)));
 
             QVectorIterator<QVector3D> it(terrainPatchData);
             while (it.hasNext())

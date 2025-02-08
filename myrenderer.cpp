@@ -6,7 +6,10 @@
 #include "myrenderer.h"
 #include "utils.h"
 
-MyRenderer::MyRenderer() : mEye(0, 20, 50), mView(0, 0, 0), mUp(0, 1, 0)
+#include "application.h"
+
+//MyRenderer::MyRenderer() : mEye(0, 20, 50), mView(0, 0, 0), mUp(0, 1, 0)
+MyRenderer::MyRenderer() : mEye(7.28911, 16.643, 11.5689), mView(6.93581, 16.1597, 10.7679), mUp(0, 1, 0)
 {
 	initializeOpenGLFunctions();
 
@@ -15,8 +18,10 @@ MyRenderer::MyRenderer() : mEye(0, 20, 50), mView(0, 0, 0), mUp(0, 1, 0)
 	auto ef = ctx->extraFunctions();
 
 	mSkybox.init();
+	mSSAO.init(QSize(1024, 768));
 	mShadowMap.init();
 	mTerrain.init();
+	mTexturedPlane.init();
 
 	/*
 	mMill.loadMesh(":/meshes/mill.obj");
@@ -31,8 +36,7 @@ MyRenderer::MyRenderer() : mEye(0, 20, 50), mView(0, 0, 0), mUp(0, 1, 0)
 	mLightObj.loadMesh(":/meshes/cube.stl");
 	mLightObj.setShader(QOpenGLShader::Vertex, ":/shaders/object_vs.glsl");
 	mLightObj.setShader(QOpenGLShader::Fragment, ":/shaders/object_fs.glsl");
-	mLightObj.localTransform().translate(QVector3D(-100, 100, 200));
-	mLightObj.localTransform().scale(QVector3D(0, 0, 0));
+	mLightObj.localTransform().translate(QVector3D(0, 100, 100));
 	mLightObj.init();
 
 	//qd << "Supported shading language version"  << QString((char*)glGetString(GL_VENDOR))<< QString((char*)glGetString(GL_RENDERER)) << QString((char*)glGetString(GL_VERSION)) << QString((char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -42,6 +46,8 @@ MyRenderer::MyRenderer() : mEye(0, 20, 50), mView(0, 0, 0), mUp(0, 1, 0)
 
 	// displaying the images
 	//initShader(mTexturedQuadShader, ":/textured_vs.glsl", ":/textured_gs.glsl", ":/textured_fs.glsl");
+
+	mElapsedTimer.start();
 }
 
 void MyRenderer::renderObjects(const QMatrix4x4& viewMatrix, QVector<cMesh*> entities)
@@ -68,7 +74,7 @@ void MyRenderer::renderObjects(const QMatrix4x4& viewMatrix, QVector<cMesh*> ent
 
 		entity->shader().setUniformValue("qt_normalMatrix", modelViewMatrix.normalMatrix()); // inverse & transpose of world matrix
 
-		entity->shader().setUniformValue("qt_lightPositionView", viewMatrix * mLightObj.position()); // for diffuse
+		entity->shader().setUniformValue("qt_lightPositionView", viewMatrix.map(mLightObj.position())); // for diffuse
 
 		f->glEnableVertexAttribArray(0);
 		f->glEnableVertexAttribArray(1);
@@ -116,6 +122,10 @@ QOpenGLFramebufferObject* MyRenderer::createFramebufferObject(const QSize& s)
 	format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	format.setSamples(4); // not sure if this works!
 	mGraphicsLayerFBO = new QOpenGLFramebufferObject(s, format);
+
+	mDimensions = QSize(mGraphicsLayerFBO->width(), mGraphicsLayerFBO->height());
+	mSSAO.initTextures(mDimensions);
+
 	return mGraphicsLayerFBO;
 }
 
@@ -227,6 +237,9 @@ void MyRenderer::synchronize(QQuickFramebufferObject *fbo)
 		}
 	}
 
+	mElapsedTimer.elapsed();
+	mElapsedTimer.restart();
+
 	if(graphicsLayer->mKeyDown[Qt::Key_Left])
 	{
 		mReactionWheel.setArmAngle(mReactionWheel.armAngle() + 1);
@@ -247,43 +260,73 @@ void MyRenderer::synchronize(QQuickFramebufferObject *fbo)
 		mReactionWheel.setWheelSpeed(mReactionWheel.wheelSpeed() - 1);
 	}
 
+	mMovementDirection = QVector3D(0, 0, 0);
+
 	if(graphicsLayer->mKeyDown[Qt::Key_W])
 	{
 		mEye += eyeDir * speed;
 		mView += eyeDir * speed;
+
+		mMovementDirection += eyeDir;
 	}
 
 	if(graphicsLayer->mKeyDown[Qt::Key_S])
 	{
-		mEye += -eyeDir * speed;
-		mView += -eyeDir * speed;
+		//mEye += -eyeDir * speed;
+		//mView += -eyeDir * speed;
+
+		mMovementDirection += -eyeDir;
 	}
 
 	if(graphicsLayer->mKeyDown[Qt::Key_A])
 	{
 		QVector3D xaxis = QVector3D::crossProduct(mUp, eyeDir).normalized();
-		mEye += xaxis * speed;
-		mView += xaxis * speed;
+		//mEye += xaxis * speed;
+		//mView += xaxis * speed;
+
+		mMovementDirection += xaxis;
 	}
 
 	if(graphicsLayer->mKeyDown[Qt::Key_D])
 	{
 		QVector3D xaxis = QVector3D::crossProduct(mUp, eyeDir).normalized();
-		mEye += -xaxis * speed;
-		mView += -xaxis * speed;
+		//mEye += -xaxis * speed;
+		//mView += -xaxis * speed;
+
+		mMovementDirection += -xaxis;
 	}
 
 	if(graphicsLayer->mKeyDown[Qt::Key_E])
 	{
-		mEye += mUp * speed;
-		mView += mUp * speed;
+		//mEye += mUp * speed;
+		//mView += mUp * speed;
+		mMovementDirection += mUp * 0.5;
 	}
 
 	if(graphicsLayer->mKeyDown[Qt::Key_Q])
 	{
-		mEye += -mUp * speed;
-		mView += -mUp * speed;
+		//mEye += -mUp * speed;
+		//mView += -mUp * speed;
+		mMovementDirection += -mUp * 0.5;
 	}
+
+	if(mMovementDirection.length() > 0)
+	{
+		mCameraVelocity += mMovementDirection * mAcceleration;
+		mCameraVelocity = mCameraVelocity * mMaxSpeed;
+	}
+	else
+	{
+		if(mCameraVelocity.length() > 0)
+		{
+			mCameraVelocity -= mCameraVelocity * mDeceleration;
+			if(mCameraVelocity.length() < 0.1)
+				mCameraVelocity = QVector3D(0, 0, 0);
+		}
+	}
+
+	mEye += mCameraVelocity;
+	mView += mCameraVelocity;
 }
 
 void MyRenderer::mousePositionChanged(float mouseX, float mouseY)
@@ -358,6 +401,9 @@ void MyRenderer::render()
 	//glBlendEquation( GL_FUNC_ADD );
 
 	mReactionWheel.setWheelAngle(mReactionWheel.wheelAngle() + mReactionWheel.wheelSpeed());
+	
+	//mLightObj.localTransform().rotate(1, QVector3D(0, 1, 0));
+	//mLightObj.localTransform().translate(QVector3D(5, 0, 0));
 
 	glViewport(0, 0, mDimensions.width(), mDimensions.height());
 
@@ -367,6 +413,13 @@ void MyRenderer::render()
 
 	mSkybox.render(viewMatrix, mProjectionMatrix, mEye);
 
+	f->glViewport(0, 0, mDimensions.width(), mDimensions.height());
+
+	// important to restore the graphics layer framebuffer after rendering the shadow map
+	mSSAO.render(mDimensions, viewMatrix, mProjectionMatrix, mReactionWheel.entities(), mGraphicsLayerFBO->handle());
+	mSSAO.renderSSAO(mDimensions, mProjectionMatrix, mGraphicsLayerFBO->handle());
+	mSSAO.renderSSAOBlur(mDimensions, mGraphicsLayerFBO->handle());
+
 	// important to restore the graphics layer framebuffer after rendering the shadow map
 	mShadowMap.render(mDimensions, mLightObj.position(), mReactionWheel.entities(), mGraphicsLayerFBO->handle());
 
@@ -374,7 +427,30 @@ void MyRenderer::render()
 
 	mTerrain.render(viewMatrix, mProjectionMatrix, mLightObj.position(), mEye, mShadowMap);
 
-	mReactionWheel.render(mDimensions, mShadowMap, viewMatrix, mProjectionMatrix, mLightObj.position());
+	mReactionWheel.render(mDimensions, mShadowMap, mSSAO, viewMatrix, mProjectionMatrix, mLightObj.position(), mEye);
+
+
+	switch (Application::instance()->comboModel()->currentData()) {
+		case 1: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.geometryTexture());
+		break;
+		case 2: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.normalTexture());
+		break;
+		case 3: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.albedoTexture());
+		break;
+		case 4: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mShadowMap.shadowMapTexture());
+		break;
+		case 5: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.SSAOTexture());
+		break;
+		case 6: mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.SSAOBlurTexture());
+		break;
+		default: break;
+	}
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mShadowMap.shadowMapTexture());
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.geometryTexture());
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.normalTexture());
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.albedoTexture());
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.SSAOTexture());
+	//mTexturedPlane.render(mDimensions, viewMatrix, mProjectionMatrix, mSSAO.SSAOBlurTexture());
 
 	/*
 	/// DRAW LINES
@@ -399,7 +475,7 @@ void MyRenderer::render()
 	*/
 
 	// this is not necessary, but it is good practice to unbind the framebuffer
-	mWindow->resetOpenGLState();
+	//mWindow->resetOpenGLState();
 }
 
 bool MyRenderer::screenToWorld(const QPoint& winCoord, int z_ndc, QVector3D &pw)

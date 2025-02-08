@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
+        <file>qml/MyComboBox.qml</file>
         <file>font/HelveticaNeueCyr-Bold.ttf</file>
         <file>font/HelveticaNeueCyr-Roman.ttf</file>
 
@@ -15,12 +16,19 @@
         <file>shaders/shadowmap_vs.glsl</file>
         <file>shaders/skybox_fs.glsl</file>
         <file>shaders/skybox_vs.glsl</file>
+	<file>shaders/ssao_pre_pass_fs.glsl</file>
+	<file>shaders/ssao_pre_pass_vs.glsl</file>
+	<file>shaders/ssao_fs.glsl</file>
+	<file>shaders/ssao_vs.glsl</file>
+	<file>shaders/ssao_blur_fs.glsl</file>
         <file>shaders/terrain_fs.glsl</file>
         <file>shaders/terrain_tcs.glsl</file>
         <file>shaders/terrain_tes.glsl</file>
         <file>shaders/terrain_vs.glsl</file>
         <file>shaders/textured_object_fs.glsl</file>
         <file>shaders/textured_object_vs.glsl</file>
+        <file>shaders/textured_plane_fs.glsl</file>
+        <file>shaders/textured_plane_vs.glsl</file>
 
         <file>meshes/car.mtl</file>
         <file>meshes/car.obj</file>

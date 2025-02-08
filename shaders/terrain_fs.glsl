@@ -58,7 +58,7 @@ void main()
 
     total /= totalTexels;
 
-    float lightFactor = 1.0 - (total * 0.66);
+    float lightFactor = 1.0 - (total * 0.5);
 
     vec4 color = mix(vec4(1, 1, 0.2, 0.1), texture(gridTexture, mapCoords_FS), 0.5);
 

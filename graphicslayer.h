@@ -23,12 +23,6 @@ struct sCamera
 	QVector3D mUp;
 };
 
-struct sResult {
-	int error;
-	int index;
-	float length;
-};
-
 class GraphicsLayer : public QQuickFramebufferObject
 {
 	Q_OBJECT
@@ -36,6 +30,7 @@ public:
 
 	Q_PROPERTY(bool perspective                   READ perspective           WRITE setPerspective           NOTIFY perspectiveChanged)
 	Q_PROPERTY(QVariant fpsCounter                READ fpsCounter                                           CONSTANT)
+	//Q_PROPERTY(QStringListModel comboModel        READ comboModel                                           CONSTANT)
 
 	GraphicsLayer();
 

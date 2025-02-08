@@ -4,6 +4,7 @@
 
 #include "cmesh.h"
 #include "shadowmap.h"
+#include "ssao.h"
 
 #include <vector>
 
@@ -15,7 +16,7 @@ public:
 
 	void init();
 
-	void render(const QSize& sceneSize, const ShadowMap& shadowMap, const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QVector3D& lightObjPosition);
+	void render(const QSize& sceneSize, const ShadowMap& shadowMap, const SSAO& ssao, const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QVector3D& lightObjPosition, const QVector3D& eyePosition);
 
 	QVector<cMesh*> entities() { return mEntities; }
 

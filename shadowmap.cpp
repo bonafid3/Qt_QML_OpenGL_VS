@@ -25,6 +25,8 @@ void ShadowMap::init()
     glGenTextures(1, &mShadowMapTexture);
     glBindTexture(GL_TEXTURE_2D, mShadowMapTexture);
 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Set to maximum depth
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -32,8 +34,6 @@ void ShadowMap::init()
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     // attach texture to the frame buffer object
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mShadowMapTexture, 0);
@@ -58,8 +58,8 @@ void ShadowMap::render(const QSize& sceneSize, const QVector3D& lightObjPosition
     lightViewMatrix.lookAt(lightObjPosition, lightTarget, up);
 
     QMatrix4x4 lightProjectionMatrix;
-    int div = 20;
-    lightProjectionMatrix.ortho(-sceneSize.width()/div, sceneSize.width()/div, -sceneSize.height()/div, sceneSize.height()/div, ZNEAR, ZFAR);
+    int dim = 24;
+    lightProjectionMatrix.ortho(-dim, dim, -dim, dim, ZNEAR, ZFAR);
 
     // here we calculate the shadowMapMatrix
     QMatrix4x4 offsetMatrix; // used to transform from hdc (-1 to 1) into (0 to 1) texture space
@@ -77,10 +77,7 @@ void ShadowMap::render(const QSize& sceneSize, const QVector3D& lightObjPosition
     f->glBindFramebuffer(GL_FRAMEBUFFER, mShadowMapFBO);
     f->glClear(GL_DEPTH_BUFFER_BIT);
 
-    f->glCullFace(GL_FRONT);
-
-    f->glActiveTexture(GL_TEXTURE0);
-    f->glBindTexture(GL_TEXTURE_2D, mShadowMapTexture);
+    //f->glCullFace(GL_FRONT);
 
     for (auto&& entity : entities) {
         entity->vbo().bind();
@@ -94,9 +91,8 @@ void ShadowMap::render(const QSize& sceneSize, const QVector3D& lightObjPosition
         entity->vbo().release();
     }
 
-    f->glCullFace(GL_BACK);
+    //f->glCullFace(GL_BACK);
 
-    f->glBindTexture(GL_TEXTURE_2D, 0);
     f->glBindFramebuffer(GL_FRAMEBUFFER, originalFBOHandle); // important to bind the original FBO where the scene is drawn!
 
     mMesh.shader().release();
@@ -110,41 +106,4 @@ const GLuint& ShadowMap::shadowMapTexture() const
 const QMatrix4x4& ShadowMap::shadowMapMatrix() const
 {
     return mShadowMapMatrix;
-}
-
-void ShadowMap::saveShadowMap(const QString& fileName) {
-    // Initialize OpenGL functions
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
-    QOpenGLFunctions* f = ctx->functions();
-
-    // Bind the texture
-    f->glBindTexture(GL_TEXTURE_2D, mShadowMapTexture);
-
-    // Allocate memory to store the texture data
-    QVector<float> pixelData(SHADOW_MAP_WIDTH * SHADOW_MAP_HEIGHT);
-
-    // Read texture data
-    f->glReadPixels(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, GL_DEPTH_COMPONENT, GL_FLOAT, pixelData.data());
-
-    // Create a grayscale QImage from the data
-    QImage image(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, QImage::Format_Grayscale8);
-    for (int y = 0; y < SHADOW_MAP_HEIGHT; ++y) {
-        for (int x = 0; x < SHADOW_MAP_WIDTH; ++x) {
-            float value = pixelData[y * SHADOW_MAP_WIDTH + x];
-            // Normalize value to [0, 255]
-            int gray = qBound(0, static_cast<int>(value * 255.0f), 255);
-            image.setPixelColor(x, SHADOW_MAP_HEIGHT - y - 1, QColor(gray, gray, gray));
-        }
-    }
-
-    // Save the image to a file
-    if (image.save(fileName)) {
-        qDebug() << "Shadow map saved to:" << fileName;
-    }
-    else {
-        qWarning() << "Failed to save shadow map to:" << fileName;
-    }
-
-    // Unbind the texture
-    f->glBindTexture(GL_TEXTURE_2D, 0);
 }

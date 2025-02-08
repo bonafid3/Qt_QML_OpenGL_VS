@@ -150,7 +150,7 @@ QMatrix4x4 cMesh::globalTransform()
 
 QVector3D cMesh::position()
 {
-    return localTransform() * QVector3D(0,0,0);
+    return localTransform().map(QVector3D(0,0,0));
 }
 
 QOpenGLShaderProgram &cMesh::shader()

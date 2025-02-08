@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QVector2D>
 #include <QVector3D>
+#include <QRegularExpression>
 
 cObjLoader::cObjLoader() : cAbstractMeshLoader()
 {
@@ -31,43 +32,50 @@ void cObjLoader::loadMaterial(const QString& prefix, const QString& file)
             } else if(l.startsWith("newmtl ")) {
                 matProgress = true;
 
-                QRegExp r("newmtl\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1)
+                QRegularExpression r("newmtl\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if(match.hasMatch())
                 {
-                    mat.name = r.cap(1);
+                    mat.name = match.captured(1);
                 }
             } else if(l.startsWith("Ka ")) { // ambient
-                QRegExp r("Ka\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1)
+                QRegularExpression r("Ka\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if(match.hasMatch())
                 {
-                    mat.Ka = QVector3D(r.cap(1).toFloat(),r.cap(2).toFloat(),r.cap(3).toFloat());
+                    mat.Ka = QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), match.captured(3).toFloat());
                 }
             } else if(l.startsWith("Kd ")) { // diffuse
-                QRegExp r("Kd\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1)
+                QRegularExpression r("Kd\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+
+                if (match.hasMatch())
                 {
-                    mat.Kd = QVector3D(r.cap(1).toFloat(),r.cap(2).toFloat(),r.cap(3).toFloat());
+                    mat.Kd = QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), match.captured(3).toFloat());
                 }
             } else if(l.startsWith("Ks ")) { // specular
-                QRegExp r("Ks\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1)
-                {
-                    mat.Ks = QVector3D(r.cap(1).toFloat(),r.cap(2).toFloat(),r.cap(3).toFloat());
+                QRegularExpression r("Ks\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    mat.Ks = QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), match.captured(3).toFloat());
                 }
             } else if(l.startsWith("Ns ")) { // specular exponent
-                QRegExp r("Ns\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1) {
-                    mat.Ns = r.cap(1).toFloat();
+                QRegularExpression r("Ns\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    mat.Ns = match.captured(1).toFloat();
                 }
             } else if(l.startsWith("illum ")) { // illumination 0-7
-                QRegExp r("illum\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1) {
-                    mat.illum = r.cap(1).toInt();
+                QRegularExpression r("illum\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    mat.illum = match.captured(1).toInt();
                 }
             } else if(l.startsWith("map_Kd ")) { // texture file
-                QRegExp r("map_Kd\\s+([^ ]+)");
-                if(r.indexIn(l, 0) != -1) {
-                    mat.map_Kd = r.cap(1);
+                QRegularExpression r("map_Kd\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    mat.map_Kd = match.captured(1);
                 }
             }
         }
@@ -101,19 +109,20 @@ void cObjLoader::load(const QString & file)
             }
             else if (l.startsWith("mtllib "))
             {
-                QRegExp r("mtllib\\s+([^\n]+)");
-                if (r.indexIn(l, 0) != -1)
-                {
-                    loadMaterial(prefix, r.cap(1));
+                QRegularExpression r("mtllib\\s+([^\n]+)");
+                QRegularExpressionMatch match = r.match(l);
+
+                if (match.hasMatch()) {
+                    loadMaterial(prefix, match.captured(1));
                 }
             }
             else if (l.startsWith("usemtl ")) // vertex
             {
                 // v -3.4101800e-003 1.3031957e-001 2.1754370e-002
-                QRegExp r("usemtl\\s+([^\n]+)");
-                if (r.indexIn(l, 0) != -1)
-                {
-                    QString matName = r.cap(1);
+                QRegularExpression r("usemtl\\s+([^\n]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    QString matName = match.captured(1);
                     foreach(sMaterial mat, mMaterials) {
                         if (mat.name == matName) {
                             currentMaterial = mat;
@@ -124,26 +133,27 @@ void cObjLoader::load(const QString & file)
             else if (l.startsWith("v ")) // vertex
             {
                 // v -3.4101800e-003 1.3031957e-001 2.1754370e-002
-                QRegExp r("v\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
-                if (r.indexIn(l, 0) != -1)
-                {
-                    v.push_back(QVector3D(r.cap(1).toFloat(), r.cap(2).toFloat(), r.cap(3).toFloat()));
+                QRegularExpression r("v\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+
+                if (match.hasMatch()) {
+                    v.push_back(QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), match.captured(3).toFloat()));
                 }
             }
             else if (l.startsWith("vt ")) // texture coords
             {
-                QRegExp r("vt\\s+([^ ]+)\\s+([^ ]+)");
-                if (r.indexIn(l, 0) != -1)
-                {
-                    vt.push_back(QVector2D(r.cap(1).toFloat(), r.cap(2).toFloat()));
+                QRegularExpression r("vt\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    vt.push_back(QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), 0));
                 }
             }
             else if (l.startsWith("vn ")) // vertex normal
             {
-                QRegExp r("vn\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
-                if (r.indexIn(l, 0) != -1)
-                {
-                    vn.push_back(QVector3D(r.cap(1).toFloat(), r.cap(2).toFloat(), r.cap(3).toFloat()));
+                QRegularExpression r("vn\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)");
+                QRegularExpressionMatch match = r.match(l);
+                if (match.hasMatch()) {
+                    vn.push_back(QVector3D(match.captured(1).toFloat(), match.captured(2).toFloat(), match.captured(3).toFloat()));
                 }
             }
             else if (l.startsWith("f ")) // face
@@ -157,24 +167,28 @@ void cObjLoader::load(const QString & file)
                 */
                 // QUAD
                 // f 1/1/1 2/2/2 3/3/3 4/4/4
-                QRegExp rq("^f\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)$");
-                if (rq.indexIn(l, 0) != -1)
+                QRegularExpression rq("^f\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)$");
+                QRegularExpressionMatch match = rq.match(l);
+
+                if (match.hasMatch())
                 {
-                    QString v1 = rq.cap(1);
-                    QString v2 = rq.cap(2);
-                    QString v3 = rq.cap(3);
-                    QString v4 = rq.cap(4);
+                    QString v1 = match.captured(1);
+                    QString v2 = match.captured(2);
+                    QString v3 = match.captured(3);
+                    QString v4 = match.captured(4);
 
                     // from quad we make 2 triangles
                     sTriangle tri1, tri2;
 
-                    QRegExp r("^(\\d+)/?(\\d+)?/(\\d+)$");
-                    if (r.indexIn(v1, 0) != -1)
+                    QRegularExpression r("^(\\d+)/?(\\d+)?/(\\d+)$");
+                    QRegularExpressionMatch match = r.match(v1);
+
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed1";
                             i2 = 0;
@@ -194,12 +208,13 @@ void cObjLoader::load(const QString & file)
                             tri2.t1 = tri2.t2 = tri2.t3 = currentMaterial.Kd;
                         }
                     }
-                    if (r.indexIn(v2, 0) != -1)
+                    match = r.match(v2);
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed2";
                             i2 = 0;
@@ -215,12 +230,13 @@ void cObjLoader::load(const QString & file)
                             tri2.t1 = tri2.t2 = tri2.t3 = currentMaterial.Kd;
                         }
                     }
-                    if (r.indexIn(v3, 0) != -1)
+                    match = r.match(v3);
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed3";
                             i2 = 0;
@@ -240,12 +256,13 @@ void cObjLoader::load(const QString & file)
                             tri2.t1 = tri2.t2 = tri2.t3 = currentMaterial.Kd;
                         }
                     }
-                    if (r.indexIn(v4, 0) != -1)
+                    match = r.match(v4);
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed4";
                             i2 = 0;
@@ -272,22 +289,26 @@ void cObjLoader::load(const QString & file)
 
                 // TRIANGLE
                 // f 1/1/1 2/2/2 3/3/3
-                QRegExp r("^f\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)$");
-                if (r.indexIn(l, 0) != -1)
+                QRegularExpression r("^f\\s+([^ ]+)\\s+([^ ]+)\\s+([^ ]+)$");
+                match = r.match(l);
+
+                if (match.hasMatch())
                 {
-                    QString v1 = r.cap(1);
-                    QString v2 = r.cap(2);
-                    QString v3 = r.cap(3);
+                    QString v1 = match.captured(1);
+                    QString v2 = match.captured(2);
+                    QString v3 = match.captured(3);
 
                     sTriangle tri;
 
-                    QRegExp r("^(\\d+)/?(\\d+)?/(\\d+)$");
-                    if (r.indexIn(v1, 0) != -1)
+                    QRegularExpression r("^(\\d+)/?(\\d+)?/(\\d+)$");
+                    QRegularExpressionMatch match = r.match(v1);
+
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed5:" << l << i1 << i2 << i3;
                             i2 = 0;
@@ -302,13 +323,13 @@ void cObjLoader::load(const QString & file)
                             tri.t1 = tri.t2 = tri.t3 = currentMaterial.Kd;
                         }
                     }
-
-                    if (r.indexIn(v2, 0) != -1)
+                    match = r.match(v2);
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed6";
                             i2 = 0;
@@ -323,13 +344,13 @@ void cObjLoader::load(const QString & file)
                             tri.t1 = tri.t2 = tri.t3 = currentMaterial.Kd;
                         }
                     }
-
-                    if (r.indexIn(v3, 0) != -1)
+                    match = r.match(v3);
+                    if (match.hasMatch())
                     {
-                        int i1 = r.cap(1).toInt();
-                        int i3 = r.cap(3).toInt();
+                        int i1 = match.captured(1).toInt();
+                        int i3 = match.captured(3).toInt();
                         bool ok;
-                        int i2 = r.cap(2).toInt(&ok);
+                        int i2 = match.captured(2).toInt(&ok);
                         if (!ok) {
                             //qd << "capture failed7";
                             i2 = 0;

@@ -41,7 +41,7 @@ void ReactionWheel::init()
 	mWheelMesh.init();
 }
 
-void ReactionWheel::render(const QSize& sceneSize, const ShadowMap& shadowMap, const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QVector3D& lightObjPosition)
+void ReactionWheel::render(const QSize& sceneSize, const ShadowMap& shadowMap, const SSAO& ssao, const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix, const QVector3D& lightObjPosition, const QVector3D& eyePosition)
 {
 	auto ctx = QOpenGLContext::currentContext();
 	QOpenGLFunctions* f = ctx->functions();
@@ -51,9 +51,10 @@ void ReactionWheel::render(const QSize& sceneSize, const ShadowMap& shadowMap, c
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, shadowMap.shadowMapTexture());
 
-	for (auto&& entity : entities()) {
-		QMatrix4x4 modelViewMatrix = viewMatrix * entity->localTransform();
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, ssao.SSAOBlurTexture());
 
+	for (auto&& entity : entities()) {
 		entity->vbo().bind();
 		entity->shader().bind();
 
@@ -63,9 +64,13 @@ void ReactionWheel::render(const QSize& sceneSize, const ShadowMap& shadowMap, c
 		entity->shader().setUniformValue("qt_viewMatrix", viewMatrix);
 		entity->shader().setUniformValue("qt_projectionMatrix", projectionMatrix);
 
+		QMatrix4x4 modelViewMatrix = viewMatrix * entity->globalTransform();
 		entity->shader().setUniformValue("qt_normalMatrix", modelViewMatrix.normalMatrix()); // inverse & transpose of world matrix
 
-		entity->shader().setUniformValue("qt_lightPositionView", viewMatrix * lightObjPosition); // for diffuse
+		entity->shader().setUniformValue("qt_lightPositionView", viewMatrix.map(lightObjPosition)); // for diffuse
+
+		//qd << "eyePosition: " << eyePosition << (viewMatrix * eyePosition);
+		entity->shader().setUniformValue("qt_eyePositionView", QVector3D(0,0,0)); // same as viewMatrix * eyePosition
 
 		f->glEnableVertexAttribArray(0);
 		f->glEnableVertexAttribArray(1);
